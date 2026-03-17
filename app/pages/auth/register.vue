@@ -7,15 +7,23 @@ const supabase = useSupabaseClient()
 
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const loading = ref(false)
 const error = ref('')
+const success = ref(false)
 
-async function login() {
+async function register() {
 
-  loading.value = true
   error.value = ''
 
-  const { error: authError } = await supabase.auth.signInWithPassword({
+  if (password.value !== confirmPassword.value) {
+    error.value = "Les mots de passe ne correspondent pas"
+    return
+  }
+
+  loading.value = true
+
+  const { error: authError } = await supabase.auth.signUp({
     email: email.value,
     password: password.value
   })
@@ -23,7 +31,7 @@ async function login() {
   if (authError) {
     error.value = authError.message
   } else {
-    navigateTo('/dashboard')
+    success.value = true
   }
 
   loading.value = false
@@ -37,29 +45,49 @@ async function login() {
 
   <div class="w-full max-w-md">
 
-    <UCard
-      class="backdrop-blur-xl bg-gray-900/80 border border-gray-800 shadow-2xl"
-    >
+    <UCard class="backdrop-blur-xl bg-gray-900/80 border border-gray-800 shadow-2xl">
 
       <div class="space-y-8">
 
-        <!-- Logo / titre -->
+        <!-- Header -->
 
         <div class="text-center space-y-2">
 
-          <h1 class="text-3xl font-bold text-white">
-            ProspectFlow
-          </h1>
+          <div class="flex items-center justify-center gap-2">
+
+            <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+              <UIcon name="i-lucide-user-plus" class="text-white"/>
+            </div>
+
+            <h1 class="text-3xl font-bold text-white">
+              ProspectFlow
+            </h1>
+
+          </div>
 
           <p class="text-gray-400 text-sm">
-            Suivi de prospection & opportunités
+            Crée ton compte
           </p>
 
         </div>
 
+        <!-- Success -->
+
+        <UAlert
+          v-if="success"
+          color="primary"
+          variant="soft"
+        >
+          Compte créé ! Vérifie ton email pour confirmer ton inscription.
+        </UAlert>
+
         <!-- Form -->
 
-        <UForm class="space-y-4" @submit="login">
+        <UForm
+          v-if="!success"
+          class="space-y-4"
+          @submit="register"
+        >
 
           <UFormGroup label="Email">
 
@@ -87,6 +115,19 @@ async function login() {
 
           </UFormGroup>
 
+          <UFormGroup label="Confirmer le mot de passe">
+
+            <UInput
+              class="m-2"
+              v-model="confirmPassword"
+              type="password"
+              size="lg"
+              placeholder="••••••••"
+              icon="i-lucide-lock"
+            />
+
+          </UFormGroup>
+
           <UButton
             class="m-2"
             block
@@ -94,12 +135,12 @@ async function login() {
             color="primary"
             :loading="loading"
           >
-            Se connecter
+            Créer un compte
           </UButton>
 
         </UForm>
 
-        <!-- erreur -->
+        <!-- Error -->
 
         <UAlert
           v-if="error"
@@ -109,11 +150,11 @@ async function login() {
           {{ error }}
         </UAlert>
 
-        <!-- divider -->
+        <!-- Divider -->
 
         <UDivider label="ou continuer avec" />
 
-        <!-- oauth -->
+        <!-- OAuth -->
 
         <div class="grid grid-cols-2 gap-3">
 
@@ -135,27 +176,26 @@ async function login() {
 
         </div>
 
+        <!-- Login link -->
+
+        <p class="text-center text-sm text-gray-400">
+
+          Déjà un compte ?
+
+          <NuxtLink
+            to="/login"
+            class="text-blue-400 hover:text-blue-300"
+          >
+            Se connecter
+          </NuxtLink>
+
+        </p>
+
       </div>
 
     </UCard>
 
-    <div class="text-center text-sm mt-4 text-gray-400">
-
-  Pas encore de compte ?
-
-  <NuxtLink
-    to="/auth/register"
-    class="text-blue-400 hover:text-blue-300 font-medium"
-  >
-    Créer un compte
-  </NuxtLink>
-
-</div>
-
-
-
   </div>
-
 
 </div>
 
