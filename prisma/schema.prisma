@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  name              String?
+  createdAt         DateTime           @default(now())
+  companies         Company[]
+  contacts          Contact[]
+  freelanceMissions FreelanceMission[]
+  interviews        Interview[]
+  jobApplications   JobApplication[]
+}
+
+model Company {
+  id                String             @id @default(uuid())
+  name              String
+  industry          String?
+  size              String?
+  website           String?
+  linkedin          String?
+  location          String?
+  notes             String?
+  userId            String
+  createdAt         DateTime           @default(now())
+  user              User               @relation(fields: [userId], references: [id])
+  contacts          Contact[]
+  freelanceMissions FreelanceMission[]
+  jobApplications   JobApplication[]
+}
+
+model Contact {
+  id         String      @id @default(uuid())
+  name       String
+  role       String?
+  email      String?
+  linkedin   String?
+  notes      String?
+  companyId  String?
+  userId     String
+  createdAt  DateTime    @default(now())
+  company    Company?    @relation(fields: [companyId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+  interviews Interview[]
+}
+
+model JobApplication {
+  id         String      @id @default(uuid())
+  position   String
+  location   String?
+  salary     String?
+  source     String?
+  status     JobStatus   @default(WISHLIST)
+  appliedAt  DateTime?
+  notes      String?
+  priority   Int?
+  userId     String
+  companyId  String
+  createdAt  DateTime    @default(now())
+  interviews Interview[]
+  company    Company     @relation(fields: [companyId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+}
+
+model FreelanceMission {
+  id           String        @id @default(uuid())
+  missionTitle String
+  missionType  String?
+  budget       Float?
+  dailyRate    Float?
+  source       String?
+  status       MissionStatus @default(LEAD)
+  probability  Int?
+  startDate    DateTime?
+  endDate      DateTime?
+  notes        String?
+  userId       String
+  companyId    String?
+  createdAt    DateTime      @default(now())
+  company      Company?      @relation(fields: [companyId], references: [id])
+  user         User          @relation(fields: [userId], references: [id])
+}
+
+model Interview {
+  id               String          @id @default(uuid())
+  type             InterviewType
+  mode             InterviewMode
+  date             DateTime
+  interviewer      String?
+  notes            String?
+  result           String?
+  nextStep         String?
+  jobApplicationId String?
+  contactId        String?
+  userId           String
+  createdAt        DateTime        @default(now())
+  contact          Contact?        @relation(fields: [contactId], references: [id])
+  jobApplication   JobApplication? @relation(fields: [jobApplicationId], references: [id])
+  user             User            @relation(fields: [userId], references: [id])
+}
+
+enum JobStatus {
+  WISHLIST
+  APPLIED
+  FOLLOW_UP
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+enum MissionStatus {
+  LEAD
+  CONTACTED
+  PROPOSAL_SENT
+  NEGOTIATION
+  SIGNED
+  COMPLETED
+  LOST
+}
+
+enum InterviewType {
+  RH
+  TECH
+  MANAGER
+  FINAL
+}
+
+enum InterviewMode {
+  REMOTE
+  ONSITE
+  PHONE
+}
