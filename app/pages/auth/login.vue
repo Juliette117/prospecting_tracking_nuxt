@@ -1,162 +1,120 @@
+<template>
+  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950  p-4">
+    <UCard class="w-full max-w-md shadow-2xl backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 ring-1 ring-white/20 dark:ring-white/10">
+      <template #header>
+        <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white">Connexion</h2>
+        <p class="text-sm text-center text-gray-500 dark:text-gray-400 mt-1">Accédez à votre plateforme de prospection</p>
+      </template>
+
+      <form @submit.prevent="handleLogin" class="space-y-6">
+        <UFormField label="Email" name="email">
+          <UInput 
+            v-model="email" 
+            type="email" 
+            placeholder="votre@email.com" 
+            icon="i-heroicons-envelope" 
+            required 
+            
+          />
+        </UFormField>
+
+        <UFormField label="Mot de passe" name="password">
+          <UInput 
+            v-model="password" 
+            type="password" 
+            placeholder="••••••••" 
+            icon="i-heroicons-lock-closed" 
+            required 
+            
+          />
+        </UFormField>
+
+        <UButton
+          type="submit"
+          color="primary"
+          size="lg"
+          block
+          :loading="loading"
+          :disabled="isLocked"
+          class="mt-6"
+        >
+          Se connecter
+        </UButton>
+      </form>
+
+      <div class="mt-6 text-sm text-center text-gray-600 dark:text-gray-300">
+        Pas encore de compte ? 
+        <NuxtLink to="/auth/register" class="text-primary-500 hover:underline font-medium">
+          S'inscrire
+        </NuxtLink>
+      </div>
+
+      <!-- Affichage des erreurs -->
+      <UAlert 
+        v-if="errorMsg" 
+        color="error" 
+        variant="subtle" 
+        :title="errorMsg" 
+        class="mt-4" 
+      />
+      <UAlert
+        v-if="attemptsMessage"
+        :color="isLocked ? 'warning' : 'info'"
+        variant="subtle"
+        :title="attemptsMessage"
+        class="mt-4"
+      />
+    </UCard>
+  </div>
+</template>
+
 <script setup lang="ts">
-
 import { ref } from 'vue'
-import { useSupabaseClient } from '#imports'
+import { getFrenchAuthErrorMessage } from '~/utils/auth-error'
 
+// Utilisation du composable fourni par @nuxtjs/supabase
 const supabase = useSupabaseClient()
+const user = useSupabaseUser()
+const { attemptsMessage, isLocked, recordFailure, resetAttempts } = useAuthAttempts('login')
 
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
-const error = ref('')
+const errorMsg = ref('')
 
-async function login() {
-
-  loading.value = true
-  error.value = ''
-
-  const { error: authError } = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: password.value
-  })
-
-  if (authError) {
-    error.value = authError.message
-  } else {
+// Redirige l'utilisateur s'il est déjà connecté
+watchEffect(() => {
+  if (user.value) {
     navigateTo('/dashboard')
   }
+})
 
-  loading.value = false
+const handleLogin = async () => {
+  try {
+    if (isLocked.value) {
+      errorMsg.value = attemptsMessage.value
+      return
+    }
+
+    loading.value = true
+    errorMsg.value = ''
+    
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.value,
+      password: password.value,
+    })
+
+    if (error) throw error
+    resetAttempts()
+    await navigateTo('/dashboard')
+  } catch (error: any) {
+    recordFailure()
+    errorMsg.value = getFrenchAuthErrorMessage(
+      error,
+      "Une erreur est survenue lors de la connexion.",
+    )
+  } finally {
+    loading.value = false
+  }
 }
-
 </script>
-
-<template>
-
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-950 via-gray-950 to-blue-900">
-
-  <div class="w-full max-w-md">
-
-    <UCard
-      class="backdrop-blur-xl bg-gray-900/80 border border-gray-800 shadow-2xl"
-    >
-
-      <div class="space-y-8">
-
-        <!-- Logo / titre -->
-
-        <div class="text-center space-y-2">
-
-          <h1 class="text-3xl font-bold text-white">
-            ProspectFlow
-          </h1>
-
-          <p class="text-gray-400 text-sm">
-            Suivi de prospection & opportunités
-          </p>
-
-        </div>
-
-        <!-- Form -->
-
-        <UForm class="space-y-4" @submit="login">
-
-          <UFormGroup label="Email">
-
-            <UInput
-              class="m-2"
-              v-model="email"
-              type="email"
-              size="lg"
-              placeholder="email@exemple.com"
-              icon="i-lucide-mail"
-            />
-
-          </UFormGroup>
-
-          <UFormGroup label="Mot de passe">
-
-            <UInput
-              class="m-2"
-              v-model="password"
-              type="password"
-              size="lg"
-              placeholder="••••••••"
-              icon="i-lucide-lock"
-            />
-
-          </UFormGroup>
-
-          <UButton
-            class="m-2"
-            block
-            size="lg"
-            color="primary"
-            :loading="loading"
-          >
-            Se connecter
-          </UButton>
-
-        </UForm>
-
-        <!-- erreur -->
-
-        <UAlert
-          v-if="error"
-          color="error"
-          variant="soft"
-        >
-          {{ error }}
-        </UAlert>
-
-        <!-- divider -->
-
-        <UDivider label="ou continuer avec" />
-
-        <!-- oauth -->
-
-        <div class="grid grid-cols-2 gap-3">
-
-          <UButton
-            icon="i-simple-icons-google"
-            variant="outline"
-            block
-          >
-            Google
-          </UButton>
-
-          <UButton
-            icon="i-simple-icons-github"
-            variant="outline"
-            block
-          >
-            GitHub
-          </UButton>
-
-        </div>
-
-      </div>
-
-    </UCard>
-
-    <div class="text-center text-sm mt-4 text-gray-400">
-
-  Pas encore de compte ?
-
-  <NuxtLink
-    to="/auth/register"
-    class="text-blue-400 hover:text-blue-300 font-medium"
-  >
-    Créer un compte
-  </NuxtLink>
-
-</div>
-
-
-
-  </div>
-
-
-</div>
-
-</template>

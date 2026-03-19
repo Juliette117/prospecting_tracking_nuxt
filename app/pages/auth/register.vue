@@ -1,202 +1,153 @@
+<template>
+  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 p-4">
+    <UCard class="w-full max-w-md shadow-2xl backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 ring-1 ring-white/20 dark:ring-white/10">
+      <template #header>
+        <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white">Créer un compte</h2>
+        <p class="text-sm text-center text-gray-500 dark:text-gray-400 mt-1">Rejoignez notre plateforme de prospection</p>
+      </template>
+
+      <form @submit.prevent="handleRegister" class="space-y-6">
+        <UFormField label="Prenom" name="firstName">
+          <UInput
+            v-model="firstName"
+            type="text"
+            placeholder="Votre prenom"
+            icon="i-heroicons-user"
+            required
+            class="mt-2"
+          />
+        </UFormField>
+
+        <UFormField label="Email" name="email">
+          <UInput 
+            v-model="email" 
+            type="email" 
+            placeholder="votre@email.com" 
+            icon="i-heroicons-envelope" 
+            required 
+            class="mt-2"
+          />
+        </UFormField>
+
+        <UFormField label="Mot de passe" name="password">
+          <UInput 
+            v-model="password" 
+            type="password" 
+            placeholder="••••••••" 
+            icon="i-heroicons-lock-closed" 
+            required 
+            class="mt-2"
+          />
+        </UFormField>
+
+        <UFormField label="Confirmer le mot de passe" name="confirmPassword">
+          <UInput 
+            v-model="confirmPassword" 
+            type="password" 
+            placeholder="••••••••" 
+            icon="i-heroicons-lock-closed" 
+            required 
+            class="mt-2"
+          />
+        </UFormField>
+
+        <UButton
+          type="submit"
+          color="primary"
+          size="lg"
+          block
+          :loading="loading"
+          class="mt-6"
+        >
+          Créer mon compte
+        </UButton>
+      </form>
+
+      <div class="mt-6 text-sm text-center text-gray-600 dark:text-gray-300">
+        Vous avez déjà un compte ? 
+        <NuxtLink to="/auth/login" class="text-primary-500 hover:underline font-medium">
+          Se connecter
+        </NuxtLink>
+      </div>
+
+      <!-- Affichage des erreurs ou succès -->
+      <UAlert 
+        v-if="errorMsg" 
+        color="error" 
+        variant="subtle" 
+        :title="errorMsg" 
+        class="mt-4" 
+      />
+      <UAlert 
+        v-if="successMsg" 
+        color="success" 
+        variant="subtle" 
+        :title="successMsg" 
+        class="mt-4" 
+      />
+    </UCard>
+  </div>
+</template>
+
 <script setup lang="ts">
-
 import { ref } from 'vue'
-import { useSupabaseClient } from '#imports'
+import { getFrenchAuthErrorMessage } from '~/utils/auth-error'
 
-const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 
+const firstName = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const loading = ref(false)
-const error = ref('')
-const success = ref(false)
+const errorMsg = ref('')
+const successMsg = ref('')
 
-async function register() {
-
-  error.value = ''
-
-  if (password.value !== confirmPassword.value) {
-    error.value = "Les mots de passe ne correspondent pas"
-    return
+// Redirige l'utilisateur s'il est déjà connecté
+watchEffect(() => {
+  if (user.value) {
+    navigateTo('/dashboard')
   }
+})
 
-  loading.value = true
+const handleRegister = async () => {
+  try {
+    if (password.value !== confirmPassword.value) {
+      errorMsg.value = "Les mots de passe ne correspondent pas."
+      return
+    }
 
-  const { error: authError } = await supabase.auth.signUp({
-    email: email.value,
-    password: password.value
-  })
+    loading.value = true
+    errorMsg.value = ''
+    successMsg.value = ''
 
-  if (authError) {
-    error.value = authError.message
-  } else {
-    success.value = true
+    await $fetch('/api/auth/register', {
+      method: 'POST',
+      body: {
+        firstName: firstName.value,
+        email: email.value,
+        password: password.value,
+      },
+    })
+
+    successMsg.value = "Inscription réussie ! Vous pouvez maintenant vous connecter."
+    firstName.value = ''
+    email.value = ''
+    password.value = ''
+    confirmPassword.value = ''
+  } catch (error: any) {
+    errorMsg.value = getFrenchAuthErrorMessage(
+      error?.data
+        ? {
+            code: error.data.code,
+            message: error.statusMessage,
+            status: error.statusCode,
+          }
+        : error,
+      "Une erreur est survenue lors de l'inscription.",
+    )
+  } finally {
+    loading.value = false
   }
-
-  loading.value = false
 }
-
 </script>
-
-<template>
-
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-950 via-gray-950 to-blue-900">
-
-  <div class="w-full max-w-md">
-
-    <UCard class="backdrop-blur-xl bg-gray-900/80 border border-gray-800 shadow-2xl">
-
-      <div class="space-y-8">
-
-        <!-- Header -->
-
-        <div class="text-center space-y-2">
-
-          <div class="flex items-center justify-center gap-2">
-
-            <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-              <UIcon name="i-lucide-user-plus" class="text-white"/>
-            </div>
-
-            <h1 class="text-3xl font-bold text-white">
-              ProspectFlow
-            </h1>
-
-          </div>
-
-          <p class="text-gray-400 text-sm">
-            Crée ton compte
-          </p>
-
-        </div>
-
-        <!-- Success -->
-
-        <UAlert
-          v-if="success"
-          color="primary"
-          variant="soft"
-        >
-          Compte créé ! Vérifie ton email pour confirmer ton inscription.
-        </UAlert>
-
-        <!-- Form -->
-
-        <UForm
-          v-if="!success"
-          class="space-y-4"
-          @submit="register"
-        >
-
-          <UFormGroup label="Email">
-
-            <UInput
-              class="m-2"
-              v-model="email"
-              type="email"
-              size="lg"
-              placeholder="email@exemple.com"
-              icon="i-lucide-mail"
-            />
-
-          </UFormGroup>
-
-          <UFormGroup label="Mot de passe">
-
-            <UInput
-              class="m-2"
-              v-model="password"
-              type="password"
-              size="lg"
-              placeholder="••••••••"
-              icon="i-lucide-lock"
-            />
-
-          </UFormGroup>
-
-          <UFormGroup label="Confirmer le mot de passe">
-
-            <UInput
-              class="m-2"
-              v-model="confirmPassword"
-              type="password"
-              size="lg"
-              placeholder="••••••••"
-              icon="i-lucide-lock"
-            />
-
-          </UFormGroup>
-
-          <UButton
-            class="m-2"
-            block
-            size="lg"
-            color="primary"
-            :loading="loading"
-          >
-            Créer un compte
-          </UButton>
-
-        </UForm>
-
-        <!-- Error -->
-
-        <UAlert
-          v-if="error"
-          color="error"
-          variant="soft"
-        >
-          {{ error }}
-        </UAlert>
-
-        <!-- Divider -->
-
-        <UDivider label="ou continuer avec" />
-
-        <!-- OAuth -->
-
-        <div class="grid grid-cols-2 gap-3">
-
-          <UButton
-            icon="i-simple-icons-google"
-            variant="outline"
-            block
-          >
-            Google
-          </UButton>
-
-          <UButton
-            icon="i-simple-icons-github"
-            variant="outline"
-            block
-          >
-            GitHub
-          </UButton>
-
-        </div>
-
-        <!-- Login link -->
-
-        <p class="text-center text-sm text-gray-400">
-
-          Déjà un compte ?
-
-          <NuxtLink
-            to="/login"
-            class="text-blue-400 hover:text-blue-300"
-          >
-            Se connecter
-          </NuxtLink>
-
-        </p>
-
-      </div>
-
-    </UCard>
-
-  </div>
-
-</div>
-
-</template>
