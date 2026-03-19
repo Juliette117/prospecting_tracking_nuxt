@@ -6,133 +6,185 @@ datasource db {
   provider = "postgresql"
 }
 
+enum RelationshipNodeType {
+  COMPANY
+  CONTACT
+  JOB_APPLICATION
+  FREELANCE_MISSION
+  INTERVIEW
+}
+
 model User {
-  id                String             @id @default(uuid())
-  email             String             @unique
-  name              String?
-  createdAt         DateTime           @default(now())
-  companies         Company[]
-  contacts          Contact[]
-  freelanceMissions FreelanceMission[]
-  interviews        Interview[]
+  id        String   @id @db.Uuid
+  email     String
+  createdAt DateTime @default(now())
+
   jobApplications   JobApplication[]
+  freelanceMissions FreelanceMission[]
+  contacts          Contacts[]
+  interviews        Interviews[]
+  relationships     Relationship[]
+  googleCalendarConnection GoogleCalendarConnection?
+  googleOAuthStates        GoogleOAuthState[]
 }
 
 model Company {
-  id                String             @id @default(uuid())
-  name              String
-  industry          String?
-  size              String?
-  website           String?
-  linkedin          String?
-  location          String?
-  notes             String?
-  userId            String
-  createdAt         DateTime           @default(now())
-  user              User               @relation(fields: [userId], references: [id])
-  contacts          Contact[]
-  freelanceMissions FreelanceMission[]
-  jobApplications   JobApplication[]
-}
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  website   String?
+  linkedin  String?
+  createdAt DateTime @default(now())
 
-model Contact {
-  id         String      @id @default(uuid())
-  name       String
-  role       String?
-  email      String?
-  linkedin   String?
-  notes      String?
-  companyId  String?
-  userId     String
-  createdAt  DateTime    @default(now())
-  company    Company?    @relation(fields: [companyId], references: [id])
-  user       User        @relation(fields: [userId], references: [id])
-  interviews Interview[]
+  jobApplications       JobApplication[]
+  freelanceMissions     FreelanceMission[]
+  contacts              Contacts[]
+  outgoingRelationships Relationship[]     @relation("RelationshipFromCompany")
+  incomingRelationships Relationship[]     @relation("RelationshipToCompany")
 }
 
 model JobApplication {
-  id         String      @id @default(uuid())
-  position   String
-  location   String?
-  salary     String?
-  source     String?
-  status     JobStatus   @default(WISHLIST)
-  appliedAt  DateTime?
-  notes      String?
-  priority   Int?
-  userId     String
-  companyId  String
-  createdAt  DateTime    @default(now())
-  interviews Interview[]
-  company    Company     @relation(fields: [companyId], references: [id])
-  user       User        @relation(fields: [userId], references: [id])
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @db.Uuid
+  companyId String @db.Uuid
+
+  position  String
+  status    String
+  appliedAt DateTime?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+
+  interviews            Interviews[]
+  outgoingRelationships Relationship[] @relation("RelationshipFromJobApplication")
+  incomingRelationships Relationship[] @relation("RelationshipToJobApplication")
 }
 
 model FreelanceMission {
-  id           String        @id @default(uuid())
-  missionTitle String
-  missionType  String?
-  budget       Float?
-  dailyRate    Float?
-  source       String?
-  status       MissionStatus @default(LEAD)
-  probability  Int?
-  startDate    DateTime?
-  endDate      DateTime?
-  notes        String?
-  userId       String
-  companyId    String?
-  createdAt    DateTime      @default(now())
-  company      Company?      @relation(fields: [companyId], references: [id])
-  user         User          @relation(fields: [userId], references: [id])
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @db.Uuid
+  companyId String @db.Uuid
+
+  title  String
+  status String
+  budget Int?
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  user                  User           @relation(fields: [userId], references: [id])
+  company               Company        @relation(fields: [companyId], references: [id])
+  outgoingRelationships Relationship[] @relation("RelationshipFromFreelanceMission")
+  incomingRelationships Relationship[] @relation("RelationshipToFreelanceMission")
 }
 
-model Interview {
-  id               String          @id @default(uuid())
-  type             InterviewType
-  mode             InterviewMode
-  date             DateTime
-  interviewer      String?
-  notes            String?
-  result           String?
-  nextStep         String?
-  jobApplicationId String?
-  contactId        String?
-  userId           String
-  createdAt        DateTime        @default(now())
-  contact          Contact?        @relation(fields: [contactId], references: [id])
-  jobApplication   JobApplication? @relation(fields: [jobApplicationId], references: [id])
-  user             User            @relation(fields: [userId], references: [id])
+model Interviews {
+  id            String @id @default(uuid()) @db.Uuid
+  userId        String @db.Uuid
+  applicationId String @db.Uuid
+
+  type        String
+  scheduledAt DateTime
+
+  notes                 String?
+  feedback              String?
+  googleCalendarEventId String?
+  googleCalendarEventUrl String?
+  googleCalendarSyncedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  user                  User           @relation(fields: [userId], references: [id])
+  application           JobApplication @relation(fields: [applicationId], references: [id])
+  outgoingRelationships Relationship[] @relation("RelationshipFromInterview")
+  incomingRelationships Relationship[] @relation("RelationshipToInterview")
 }
 
-enum JobStatus {
-  WISHLIST
-  APPLIED
-  FOLLOW_UP
-  INTERVIEW
-  OFFER
-  REJECTED
+model Contacts {
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @db.Uuid
+  companyId String @db.Uuid
+
+  name     String
+  role     String?
+  email    String?
+  linkedin String?
+
+  createdAt DateTime @default(now())
+
+  user                  User           @relation(fields: [userId], references: [id])
+  company               Company        @relation(fields: [companyId], references: [id])
+  outgoingRelationships Relationship[] @relation("RelationshipFromContact")
+  incomingRelationships Relationship[] @relation("RelationshipToContact")
 }
 
-enum MissionStatus {
-  LEAD
-  CONTACTED
-  PROPOSAL_SENT
-  NEGOTIATION
-  SIGNED
-  COMPLETED
-  LOST
+model Relationship {
+  id                     String               @id @default(uuid()) @db.Uuid
+  userId                 String               @db.Uuid
+  relationship           String
+  fromType               RelationshipNodeType
+  toType                 RelationshipNodeType
+  fromCompanyId          String?              @db.Uuid
+  fromContactId          String?              @db.Uuid
+  fromJobApplicationId   String?              @db.Uuid
+  fromFreelanceMissionId String?              @db.Uuid
+  fromInterviewId        String?              @db.Uuid
+  toCompanyId            String?              @db.Uuid
+  toContactId            String?              @db.Uuid
+  toJobApplicationId     String?              @db.Uuid
+  toFreelanceMissionId   String?              @db.Uuid
+  toInterviewId          String?              @db.Uuid
+  createdAt              DateTime             @default(now())
+
+  user                 User              @relation(fields: [userId], references: [id])
+  fromCompany          Company?          @relation("RelationshipFromCompany", fields: [fromCompanyId], references: [id], onDelete: Cascade)
+  fromContact          Contacts?         @relation("RelationshipFromContact", fields: [fromContactId], references: [id], onDelete: Cascade)
+  fromJobApplication   JobApplication?   @relation("RelationshipFromJobApplication", fields: [fromJobApplicationId], references: [id], onDelete: Cascade)
+  fromFreelanceMission FreelanceMission? @relation("RelationshipFromFreelanceMission", fields: [fromFreelanceMissionId], references: [id], onDelete: Cascade)
+  fromInterview        Interviews?       @relation("RelationshipFromInterview", fields: [fromInterviewId], references: [id], onDelete: Cascade)
+  toCompany            Company?          @relation("RelationshipToCompany", fields: [toCompanyId], references: [id], onDelete: Cascade)
+  toContact            Contacts?         @relation("RelationshipToContact", fields: [toContactId], references: [id], onDelete: Cascade)
+  toJobApplication     JobApplication?   @relation("RelationshipToJobApplication", fields: [toJobApplicationId], references: [id], onDelete: Cascade)
+  toFreelanceMission   FreelanceMission? @relation("RelationshipToFreelanceMission", fields: [toFreelanceMissionId], references: [id], onDelete: Cascade)
+  toInterview          Interviews?       @relation("RelationshipToInterview", fields: [toInterviewId], references: [id], onDelete: Cascade)
+
+  @@index([userId, relationship])
+  @@index([userId, fromType])
+  @@index([userId, toType])
 }
 
-enum InterviewType {
-  RH
-  TECH
-  MANAGER
-  FINAL
+model GoogleCalendarConnection {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @unique @db.Uuid
+  refreshToken String
+  accessToken  String?
+  tokenType    String?
+  scope        String?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-enum InterviewMode {
-  REMOTE
-  ONSITE
-  PHONE
+model GoogleOAuthState {
+  id        String   @id @default(uuid()) @db.Uuid
+  state     String   @unique
+  provider  String
+  userId    String   @db.Uuid
+  returnTo  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([provider, expiresAt])
+  @@index([userId, provider])
 }

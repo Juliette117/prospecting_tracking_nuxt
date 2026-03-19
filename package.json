@@ -4,18 +4,28 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "db:seed": "node prisma/seed.mjs",
+    "db:sync-user": "node scripts/sync-supabase-user.mjs",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "prisma generate && nuxt prepare"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
   },
   "dependencies": {
     "@nuxt/ui": "^4.5.1",
     "@nuxtjs/supabase": "^2.0.4",
+    "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "nuxt": "^4.4.2",
+    "pg": "^8.20.0",
     "prisma": "^7.5.0",
     "vue": "^3.5.30",
     "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "supabase": "^2.80.0"
   }
 }
