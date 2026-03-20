@@ -155,7 +155,7 @@
                   v-else-if="!isGoogleCalendarAvailable"
                   class="inline-flex items-center rounded-xl bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700"
                 >
-                  Migration Prisma requise
+                  Connectez-vous à votre compte Google pour synchroniser vos entretiens
                 </div>
 
                 <div
