@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 class="dashboard-tight-title text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Plateforme de Suivi de Prospection
           </h1>
           <p class="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base">
@@ -11,8 +11,8 @@
           </p>
         </div>
 
-        <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center lg:justify-end">
-          <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-2 text-sm text-slate-200 shadow-sm backdrop-blur">
+        <div class="dashboard-header-actions flex flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:justify-end">
+          <div class="dashboard-user-pill rounded-2xl border border-white/15 bg-white/10 px-4 py-2 text-left text-sm text-slate-200 shadow-sm backdrop-blur">
             Bonjour <span class="font-bold text-white">{{ userDisplayName }}</span>
           </div>
 
@@ -21,7 +21,7 @@
             variant="soft"
             icon="i-heroicons-arrow-right-on-rectangle"
             :loading="isSigningOut"
-            class="rounded-2xl"
+            class="dashboard-primary-action justify-center rounded-2xl"
             @click="handleSignOut"
           >
             Se deconnecter
@@ -31,12 +31,12 @@
 
       <section class="mt-6 overflow-hidden rounded-[28px] border border-[var(--dashboard-line)] bg-[rgba(255,255,255,0.92)] shadow-[0_24px_80px_-40px_rgba(41,72,152,0.28)] backdrop-blur">
         <div class="border-b border-[var(--dashboard-line)] px-4 pt-3 sm:px-6">
-          <div class="flex min-w-max gap-1 overflow-x-auto pb-0">
+          <div class="dashboard-tab-strip flex gap-1 overflow-x-auto pb-1">
             <NuxtLink
               v-for="tab in tabs"
               :key="tab.to"
               :to="tab.to"
-              class="inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition"
+              class="dashboard-tab-link inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition"
               :class="tab.isActive
                 ? 'border-[var(--dashboard-accent)] text-[var(--dashboard-accent)]'
                 : 'border-transparent text-[var(--dashboard-muted)] hover:text-[var(--dashboard-ink)]'"
@@ -118,7 +118,7 @@
                     </p>
                   </div>
 
-                  <div class="flex items-center gap-1 self-end lg:self-start">
+                  <div class="flex flex-wrap items-center justify-end gap-1 self-start lg:self-start">
                     <UButton
                       color="neutral"
                       variant="ghost"
@@ -140,15 +140,15 @@
                 </div>
 
                 <div class="grid gap-4 text-sm text-[var(--dashboard-muted)] md:grid-cols-2">
-                  <div class="space-y-3">
+                  <div class="dashboard-meta-block space-y-3">
                     <div class="flex items-center gap-2">
                       <UIcon name="i-heroicons-calendar-days" class="h-4 w-4 text-[var(--dashboard-subtle)]" />
-                      <span>{{ formatDate(application.appliedAt ?? application.createdAt) }}</span>
+                      <span class="dashboard-break-text">{{ formatDate(application.appliedAt ?? application.createdAt) }}</span>
                     </div>
 
                     <div v-if="application.primaryContact?.email" class="flex items-center gap-2">
                       <UIcon name="i-heroicons-envelope" class="h-4 w-4 text-[var(--dashboard-subtle)]" />
-                      <span>{{ application.primaryContact.email }}</span>
+                      <span class="dashboard-break-text">{{ application.primaryContact.email }}</span>
                     </div>
 
                     <div v-else-if="application.companyWebsite" class="flex items-center gap-2">
@@ -157,17 +157,17 @@
                         :href="application.companyWebsite"
                         target="_blank"
                         rel="noreferrer"
-                        class="hover:text-[var(--dashboard-accent)]"
+                        class="dashboard-break-text hover:text-[var(--dashboard-accent)]"
                       >
                         {{ formatLinkLabel(application.companyWebsite) }}
                       </a>
                     </div>
                   </div>
 
-                  <div class="space-y-3">
+                  <div class="dashboard-meta-block space-y-3">
                     <div v-if="application.primaryContact" class="flex items-center gap-2">
                       <UIcon name="i-heroicons-identification" class="h-4 w-4 text-[var(--dashboard-subtle)]" />
-                      <span>
+                      <span class="dashboard-break-text">
                         {{ application.primaryContact.name }}
                         <template v-if="application.primaryContact.role">
                           · {{ application.primaryContact.role }}
@@ -181,7 +181,7 @@
                         :href="application.primaryContact.linkedin"
                         target="_blank"
                         rel="noreferrer"
-                        class="hover:text-[var(--dashboard-accent)]"
+                        class="dashboard-break-text hover:text-[var(--dashboard-accent)]"
                       >
                         Profil LinkedIn
                       </a>
@@ -213,9 +213,9 @@
 
     <div
       v-if="isEditorOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-sm"
+      class="dashboard-modal-overlay fixed inset-0 z-50 flex justify-center bg-slate-950/65 px-4 py-6 backdrop-blur-sm"
     >
-      <div class="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[28px] border border-white/10 bg-white shadow-2xl">
+      <div class="dashboard-modal-panel max-h-[92vh] w-full overflow-y-auto rounded-[28px] border border-white/10 bg-white shadow-2xl">
         <div class="flex items-start justify-between gap-4 border-b border-[var(--dashboard-line)] px-5 py-4 sm:px-6">
           <div>
             <h3 class="text-2xl font-bold text-[var(--dashboard-ink)]">

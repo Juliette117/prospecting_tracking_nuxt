@@ -3,7 +3,7 @@
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <header class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 class="dashboard-tight-title text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Plateforme de Suivi de Prospection
           </h1>
           <p class="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base">
@@ -11,8 +11,8 @@
           </p>
         </div>
 
-        <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center lg:justify-end">
-          <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-2 text-sm text-slate-200 shadow-sm backdrop-blur">
+        <div class="dashboard-header-actions flex flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:justify-end">
+          <div class="dashboard-user-pill rounded-2xl border border-white/15 bg-white/10 px-4 py-2 text-left text-sm text-slate-200 shadow-sm backdrop-blur">
             Bonjour <span class="font-bold text-white">{{ userDisplayName }}</span>
           </div>
 
@@ -21,7 +21,7 @@
             variant="soft"
             icon="i-heroicons-arrow-right-on-rectangle"
             :loading="isSigningOut"
-            class="rounded-2xl"
+            class="dashboard-primary-action justify-center rounded-2xl"
             @click="handleSignOut"
           >
             Se deconnecter
@@ -31,12 +31,12 @@
 
       <section class="mt-6 overflow-hidden rounded-[28px] border border-[var(--dashboard-line)] bg-[rgba(255,255,255,0.92)] shadow-[0_24px_80px_-40px_rgba(41,72,152,0.28)] backdrop-blur">
         <div class="border-b border-[var(--dashboard-line)] px-4 pt-3 sm:px-6">
-          <div class="flex min-w-max gap-1 overflow-x-auto pb-0">
+          <div class="dashboard-tab-strip flex gap-1 overflow-x-auto pb-1">
             <NuxtLink
               v-for="tab in tabs"
               :key="tab.to"
               :to="tab.to"
-              class="inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition"
+              class="dashboard-tab-link inline-flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition"
               :class="tab.isActive
                 ? 'border-[var(--dashboard-accent)] text-[var(--dashboard-accent)]'
                 : 'border-transparent text-[var(--dashboard-muted)] hover:text-[var(--dashboard-ink)]'"
@@ -63,7 +63,7 @@
                 <label for="graph-search" class="text-sm font-semibold text-[var(--dashboard-ink)]">
                   Recherche
                 </label>
-                <div class="mt-2 flex items-center gap-2">
+                <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                   <div class="relative flex-1">
                     <UIcon name="i-heroicons-magnifying-glass" class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[var(--dashboard-muted)]" />
                     <input
@@ -129,7 +129,7 @@
             <div class="relative">
               <div
                 ref="graphStageRef"
-                class="graph-stage h-[560px] overflow-auto rounded-[20px]"
+                class="graph-stage h-[420px] overflow-auto rounded-[20px] sm:h-[520px] lg:h-[560px]"
                 :class="isPanning ? 'cursor-grabbing select-none' : canPanGraph ? 'cursor-grab' : 'cursor-default'"
                 @dragstart.prevent
                 @pointerdown="startGraphPan"
@@ -200,7 +200,7 @@
                     <div
                       v-for="connection in graphConnections"
                       :key="`${connection.id}-label`"
-                      class="absolute -translate-x-1/2 -translate-y-1/2 rounded-md border border-white/30 px-2 py-1 text-[10px] font-semibold whitespace-nowrap shadow-sm backdrop-blur"
+                      class="absolute max-w-[120px] -translate-x-1/2 -translate-y-1/2 rounded-md border border-white/30 px-2 py-1 text-center text-[10px] leading-tight font-semibold whitespace-normal shadow-sm backdrop-blur"
                       :class="connection.labelClass"
                       :style="{ left: `${connection.labelX}%`, top: `${connection.labelY}%`, opacity: connection.opacity }"
                     >

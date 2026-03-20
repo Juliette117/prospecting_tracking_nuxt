@@ -15,6 +15,7 @@ html {
     radial-gradient(circle at top left, rgba(79, 124, 255, 0.08), transparent 28%),
     radial-gradient(circle at top right, rgba(147, 51, 234, 0.06), transparent 24%),
     var(--dashboard-bg);
+  overflow-x: hidden;
 }
 
 body {
@@ -22,6 +23,7 @@ body {
   background: transparent;
   color: var(--dashboard-ink);
   font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+  overflow-x: hidden;
 }
 
 h1,
@@ -30,6 +32,93 @@ h3 {
   font-family: "Avenir Next Condensed", "Avenir Next", "Trebuchet MS", sans-serif;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+}
+
 .dashboard-shell {
   position: relative;
+  overflow-x: clip;
+}
+
+.dashboard-tab-strip {
+  width: 100%;
+  min-width: 0;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dashboard-tab-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.dashboard-tab-link {
+  flex: 0 0 auto;
+  min-width: max-content;
+}
+
+.dashboard-header-actions {
+  width: 100%;
+}
+
+.dashboard-user-pill,
+.dashboard-primary-action {
+  width: 100%;
+}
+
+.dashboard-meta-list > div,
+.dashboard-meta-block {
+  min-width: 0;
+}
+
+.dashboard-break-text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.dashboard-modal-overlay {
+  overflow-y: auto;
+  align-items: flex-start;
+}
+
+.dashboard-modal-panel {
+  width: min(100%, 48rem);
+}
+
+@media (min-width: 640px) {
+  .dashboard-header-actions,
+  .dashboard-user-pill,
+  .dashboard-primary-action {
+    width: auto;
+  }
+
+  .dashboard-modal-overlay {
+    align-items: center;
+  }
+}
+
+@media (max-width: 639px) {
+  .dashboard-stat-value {
+    font-size: 1.875rem;
+    line-height: 1.1;
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard-tight-title {
+    font-size: 1.75rem;
+    line-height: 1.15;
+  }
+
+  .dashboard-tab-link {
+    padding-inline: 0.875rem;
+  }
 }

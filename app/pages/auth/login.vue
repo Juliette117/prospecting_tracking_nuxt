@@ -1,8 +1,8 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950  p-4">
+  <div class="flex min-h-screen items-start justify-center bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 p-4 py-8 sm:items-center">
     <UCard class="w-full max-w-md shadow-2xl backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 ring-1 ring-white/20 dark:ring-white/10">
       <template #header>
-        <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white">Connexion</h2>
+        <h2 class="text-center text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">Connexion</h2>
         <p class="text-sm text-center text-gray-500 dark:text-gray-400 mt-1">Accédez à votre plateforme de prospection</p>
       </template>
 
